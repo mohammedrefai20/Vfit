@@ -1,12 +1,23 @@
-from fastapi import FastAPI,Request
-from app.core.config import settings
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import settings
 from app.core.logging import configure_logging
 from app.api.v1.router import api_router
 
 configure_logging(settings.debug)
 
 app = FastAPI(title=settings.app_name)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # extend with prod frontend URL in Phase 14
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(api_router)
 
 
