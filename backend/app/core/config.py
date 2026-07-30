@@ -1,5 +1,9 @@
 from pydantic_settings import BaseSettings
 
+jwt_secret_key: str = ""
+jwt_algorithm: str = "HS256"
+jwt_expire_minutes: int = 60 * 24  # 24 hours
+
 class Settings(BaseSettings):
     app_name: str = "V Fit API"
     environment: str = "development"
