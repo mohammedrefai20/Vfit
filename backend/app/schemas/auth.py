@@ -12,9 +12,10 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
+    has_completed_onboarding: bool = False
 
     class Config:
-        from_attributes = True  # allows building this from a SQLAlchemy model instance
+        from_attributes = True
 
 class Token(BaseModel):
     access_token: str

@@ -1,15 +1,17 @@
 from functools import lru_cache
+from app.repositories.profile_repository import ProfileRepository
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from app.core.config import settings
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer ,HTTPBearer, HTTPAuthorizationCredentials
 from app.core.security import decode_access_token
 from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+bearer_scheme = HTTPBearer()
 
 @lru_cache
 def get_settings():
@@ -28,6 +30,10 @@ def get_db_session() -> Session:
 def get_user_repository(db: Session = Depends(get_db_session)) -> UserRepository:
     return UserRepository(db)
 
+
+def get_profile_repository(db: Session = Depends(get_db_session)) -> ProfileRepository:
+    return ProfileRepository(db)
+
 def get_auth_service(repo: UserRepository = Depends(get_user_repository)) -> AuthService:
     return AuthService(repo)
 # Provider/repository factories will be added here in later phases,
@@ -35,14 +41,17 @@ def get_auth_service(repo: UserRepository = Depends(get_user_repository)) -> Aut
 
 
 
+
+
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     repo: UserRepository = Depends(get_user_repository),
 ) -> User:
+    token = credentials.credentials
     user_id = decode_access_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    user = repo.get_by_id(user_id)  # add this method to UserRepository, mirrors get_by_email
+    user = repo.get_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
     return user
