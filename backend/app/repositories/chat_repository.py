@@ -30,12 +30,19 @@ class ChatRepository:
         self.db.refresh(session)
         return str(session.id)
     
+
+
     def get_active_session(self, user_id, session_id):
         """Return the session if it exists, belongs to this user, and hasn't expired; else None."""
         if not session_id:
             return None
+        try:
+            session_uuid = uuid.UUID(str(session_id))
+        except (ValueError, AttributeError):
+            return None  # not a real UUID - treat as "no session", not a crash
+
         session = self.db.query(ChatSession).filter(
-            ChatSession.id == session_id, ChatSession.user_id == user_id
+            ChatSession.id == session_uuid, ChatSession.user_id == user_id
         ).first()
         if session is None:
             return None

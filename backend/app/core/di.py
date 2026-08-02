@@ -22,6 +22,7 @@ from app.repositories.knowledge_repository import KnowledgeRepository
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 bearer_scheme = HTTPBearer()
+optional_bearer_scheme = HTTPBearer(auto_error=False)
 
 @lru_cache
 def get_settings():
@@ -88,16 +89,15 @@ def get_workout_planner_service(
     return WorkoutPlannerService(rule_engine_service, llm_provider, workout_repo, exercise_repo)
 
 def get_optional_current_user(
-    authorization: str | None = Header(default=None),
-    repo: UserRepository = Depends(get_user_repository),
-) -> User | None:
-    if authorization is None:
-        return None
-    token = authorization.replace("Bearer ", "")
-    user_id = decode_access_token(token)
-    if user_id is None:
-        return None
-    return repo.get_by_id(user_id)
+        credentials: HTTPAuthorizationCredentials | None = Depends(optional_bearer_scheme),
+        repo: UserRepository = Depends(get_user_repository),
+    ) -> User | None:
+        if credentials is None:
+            return None
+        user_id = decode_access_token(credentials.credentials)
+        if user_id is None:
+            return None
+        return repo.get_by_id(user_id)
 
 
 def get_chat_repository(db: Session = Depends(get_db_session)) -> ChatRepository:

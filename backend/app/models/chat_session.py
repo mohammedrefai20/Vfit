@@ -2,9 +2,11 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, JSON
+
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
+
 
 
 class ChatSession(Base):
@@ -19,4 +21,4 @@ class ChatSession(Base):
 
     messages: Mapped[dict] = mapped_column(JSON, default=list)
 
-    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
