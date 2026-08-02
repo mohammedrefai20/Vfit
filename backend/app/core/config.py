@@ -9,8 +9,8 @@ class Settings(BaseSettings):
 
     database_url: str = ""
 
-    llm_provider: str = "grok"
-    grok_api_key: str = ""
+    llm_provider: str = "groq"
+    groq_api_key: str = ""
 
     jwt_secret_key: str = ""
     jwt_algorithm: str = "HS256"
