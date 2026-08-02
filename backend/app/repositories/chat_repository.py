@@ -29,3 +29,16 @@ class ChatRepository:
         self.db.commit()
         self.db.refresh(session)
         return str(session.id)
+    
+    def get_active_session(self, user_id, session_id):
+        """Return the session if it exists, belongs to this user, and hasn't expired; else None."""
+        if not session_id:
+            return None
+        session = self.db.query(ChatSession).filter(
+            ChatSession.id == session_id, ChatSession.user_id == user_id
+        ).first()
+        if session is None:
+            return None
+        if session.expires_at < datetime.now(timezone.utc):
+            return None
+        return session
