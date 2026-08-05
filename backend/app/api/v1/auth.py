@@ -6,6 +6,8 @@ from app.core.di import get_current_user
 from app.models.user import User
 from app.repositories.profile_repository import ProfileRepository
 from app.core.di import get_profile_repository
+from app.schemas.profile import ProfileCreate
+
 
 router = APIRouter()
 
