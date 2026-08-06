@@ -11,7 +11,7 @@ from app.models.user import User
 
 router = APIRouter()
 
-@router.post("/profile")
+@router.post("/")
 def create_profile(
     payload: ProfileCreate,
     current_user: User = Depends(get_current_user),

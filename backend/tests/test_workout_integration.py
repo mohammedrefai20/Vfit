@@ -25,16 +25,34 @@ def test_generate_workout_only_uses_eligible_exercises(client, db_session):
 
     exercise = _create_exercise(db_session)
 
-    client.post("/api/v1/auth/profile", headers=headers, json={
-        "age": 25, "sex": "Male", "height": 175, "weight": 70,
-        "goal": "General", "experience": "Beginner", "training_location": "Home",
-        "equipment": "Bodyweight", "training_days": 1,
-    })
-
+    # client.post("/api/v1/profile", headers=headers, json={
+    #     "age": 25, "sex": "Male", "height": 175, "weight": 70,
+    #     "goal": "General", "experience": "Beginner", "training_location": "Home",
+    #     "equipment": "Bodyweight", "training_days": 1,
+    # })
+    profile_response = client.post(
+        "/api/v1/profile",
+        headers=headers,
+        json={
+            "age": 25,
+            "sex": "Male",
+            "height": 175,
+            "weight": 70,
+            "goal": "General",
+            "experience": "Beginner",
+            "training_location": "Home",
+            "equipment": "Bodyweight",
+            "training_days": 1,
+        },
+    )
     fake_llm = FakeLLMProvider(make_fake_plan_response(str(exercise.id), exercise.name))
     app.dependency_overrides[get_groq_provider] = lambda: fake_llm
 
     response = client.post("/api/v1/workouts/generate", headers=headers)
+    print("=" * 80)
+    print("STATUS :", response.status_code)
+    print("BODY   :", response.text)
+    print("=" * 80)
     assert response.status_code == 200
     assert response.json()["version"] == 1
 
@@ -45,7 +63,7 @@ def test_generate_workout_rejects_hallucinated_exercise(client, db_session):
     headers = {"Authorization": f"Bearer {token}"}
     _create_exercise(db_session)
 
-    client.post("/api/v1/auth/profile", headers=headers, json={
+    client.post("/api/v1/profile", headers=headers, json={
         "age": 25, "sex": "Male", "height": 175, "weight": 70,
         "goal": "General", "experience": "Beginner", "training_location": "Home",
         "equipment": "Bodyweight", "training_days": 1,
