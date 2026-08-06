@@ -14,8 +14,8 @@ class UserRepository:
             user_id = uuid.UUID(user_id)
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def create(self, email: str, hashed_password: str) -> User:
-        user = User(email=email, hashed_password=hashed_password)
+    def create(self, first_name: str, last_name: str, birth_date, email: str, hashed_password: str) -> User:
+        user = User(first_name=first_name, last_name=last_name, birth_date=birth_date, email=email, hashed_password=hashed_password)
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)

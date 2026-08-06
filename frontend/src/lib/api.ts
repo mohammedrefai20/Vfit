@@ -20,9 +20,13 @@ async function apiRequest(path: string, options: RequestInit = {}) {
   return response.json();
 }
 
+
 export const api = {
   get: (path: string) => apiRequest(path),
   post: (path: string, body?: unknown) =>
     apiRequest(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
   delete: (path: string) => apiRequest(path, { method: "DELETE" }),
+  put: (path: string, body?: unknown) =>
+    apiRequest(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
 };
+

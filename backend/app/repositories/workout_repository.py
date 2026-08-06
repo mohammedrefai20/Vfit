@@ -9,7 +9,8 @@ class WorkoutRepository:
     def __init__(self, db):
         self.db = db
 
-    def save_new_version(self, user_id, plan_data: dict, volume) -> Workout:
+    def save_new_version(self, user_id, plan_data: dict, volume, plan_name: str) -> Workout:
+
         existing = (
             self.db.query(Workout)
             .filter(Workout.user_id == user_id)
@@ -18,7 +19,7 @@ class WorkoutRepository:
         )
         next_version = (existing[0].version_number + 1) if existing else 1
 
-        workout = Workout(user_id=user_id, version_number=next_version, is_active=True)
+        workout = Workout(user_id=user_id, version_number=next_version, is_active=True, name=plan_name)
         self.db.add(workout)
         self.db.flush()
 
@@ -61,4 +62,31 @@ class WorkoutRepository:
             .filter(Workout.user_id == user_id)
             .order_by(Workout.version_number.desc())
             .first()
+        )
+    def get_workout_exercise(self, workout_exercise_id, user_id):
+        """Fetch a single workout_exercise row, scoped through its parent workout's owner."""
+        if isinstance(workout_exercise_id, str):
+            workout_exercise_id = uuid.UUID(workout_exercise_id)
+        return (
+            self.db.query(WorkoutExercise)
+            .join(Workout, Workout.id == WorkoutExercise.workout_id)
+            .filter(WorkoutExercise.id == workout_exercise_id, Workout.user_id == user_id)
+            .first()
+        )
+
+    def replace_exercise(self, workout_exercise_id, new_exercise_id):
+        workout_exercise = self.db.query(WorkoutExercise).filter(WorkoutExercise.id == workout_exercise_id).first()
+        workout_exercise.exercise_id = new_exercise_id
+        self.db.commit()
+        self.db.refresh(workout_exercise)
+        return workout_exercise
+
+    
+    def get_all_for_user(self, user_id):
+        """Return all of a user's workout versions (up to 3, per the retention rule), newest first."""
+        return (
+            self.db.query(Workout)
+            .filter(Workout.user_id == user_id)
+            .order_by(Workout.version_number.desc())
+            .all()
         )

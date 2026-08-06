@@ -5,12 +5,12 @@ class AuthService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def register(self, email: str, password: str):
+    def register(self, first_name: str, last_name: str, birth_date, email: str, password: str):
         existing = self.user_repository.get_by_email(email)
         if existing:
             raise ValueError("Email already registered")
         hashed = hash_password(password)
-        user = self.user_repository.create(email, hashed)
+        user = self.user_repository.create(first_name, last_name, birth_date, email, hashed)
         return user
 
     def login(self, email: str, password: str) -> str:

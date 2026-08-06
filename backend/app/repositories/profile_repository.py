@@ -17,3 +17,10 @@ class ProfileRepository:
         self.db.commit()
         self.db.refresh(profile)
         return profile
+    def update(self, user_id, **fields):
+        profile = self.get_by_user_id(user_id)
+        for key, value in fields.items():
+            setattr(profile, key, value)
+        self.db.commit()
+        self.db.refresh(profile)
+        return profile

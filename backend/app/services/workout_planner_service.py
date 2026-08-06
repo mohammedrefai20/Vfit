@@ -14,7 +14,7 @@ class WorkoutPlannerService:
         self.workout_repository = workout_repository
         self.exercise_repository = exercise_repository
 
-    def generate_plan(self, user_id, profile) -> dict:
+    def generate_plan(self, user_id, profile, plan_name: str) -> dict:
         constraints = UserConstraints(
             experience=profile.experience,
             equipment=profile.equipment.split(","),
@@ -33,7 +33,7 @@ class WorkoutPlannerService:
         ) 
 
         plan_data = self._validate_and_parse(raw_response, rule_result.eligible_exercises)
-        return self.workout_repository.save_new_version(user_id, plan_data, volume)
+        return self.workout_repository.save_new_version(user_id, plan_data, volume, plan_name)
 
     def _validate_and_parse(self, raw_response: str, eligible_exercises: list) -> dict:
         """Parse LLM JSON output and reject any exercise not present in the eligible candidate list."""

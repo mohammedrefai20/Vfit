@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
-
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -16,6 +15,8 @@ class Workout(Base):
 
     version_number: Mapped[int] = mapped_column(Integer)
 
+    name: Mapped[str] = mapped_column(String(100), default="My Workout Plan")
+    
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow

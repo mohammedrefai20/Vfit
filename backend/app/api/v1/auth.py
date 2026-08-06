@@ -14,7 +14,9 @@ router = APIRouter()
 @router.post("/register", response_model=UserResponse)
 def register(payload: UserRegister, auth_service: AuthService = Depends(get_auth_service)):
     try:
-        user = auth_service.register(payload.email, payload.password)
+        user = auth_service.register(
+            payload.first_name, payload.last_name, payload.birth_date, payload.email, payload.password
+        )
         return user
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -28,13 +30,5 @@ def login(payload: UserLogin, auth_service: AuthService = Depends(get_auth_servi
         raise HTTPException(status_code=401, detail=str(e))
 
 @router.get("/me", response_model=UserResponse)
-def get_me(
-    current_user: User = Depends(get_current_user),
-    profile_repo: ProfileRepository = Depends(get_profile_repository),
-):
-    profile = profile_repo.get_by_user_id(current_user.id)
-    return UserResponse(
-        id=current_user.id,
-        email=current_user.email,
-        has_completed_onboarding=profile is not None,
-    )
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
