@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
-
+from datetime import timezone
 from sqlalchemy import DateTime, Float, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime
 
 from app.models.base import Base
 
@@ -22,6 +22,6 @@ class ProgressLog(Base):
     note: Mapped[str] = mapped_column(Text)
 
     logged_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
     )

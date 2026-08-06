@@ -1,5 +1,7 @@
+import uuid
 from app.models.workout import Workout
 from app.models.workout_exercise import WorkoutExercise
+from app.models.exercise import Exercise
 
 class WorkoutRepository:
     """Handles saving workout plans and enforcing the latest-3-versions retention rule."""
@@ -24,10 +26,10 @@ class WorkoutRepository:
             for order, exercise in enumerate(day["exercises"]):
                 self.db.add(WorkoutExercise(
                     workout_id=workout.id,
-                    exercise_id=exercise["exercise_id"],
+                    exercise_id=uuid.UUID(exercise["exercise_id"]),  # convert string -> real UUID
                     day_number=day["day_number"],
                     sets=volume.sets,
-                    reps=volume.reps_range[1],  # store upper bound of range for simplicity
+                    reps=volume.reps_range[1],
                     order=order,
                 ))
 
@@ -39,3 +41,24 @@ class WorkoutRepository:
         self.db.commit()
         self.db.refresh(workout)
         return workout
+    def get_by_id_with_exercises(self, workout_id, user_id):
+        """Fetch a workout with its exercises, scoped to the owning user."""
+        workout = self.db.query(Workout).filter(Workout.id == workout_id, Workout.user_id == user_id).first()
+        if workout is None:
+            return None
+        exercises = (
+            self.db.query(WorkoutExercise, Exercise)
+            .join(Exercise, WorkoutExercise.exercise_id == Exercise.id)
+            .filter(WorkoutExercise.workout_id == workout_id)
+            .order_by(WorkoutExercise.day_number, WorkoutExercise.order)
+            .all()
+        )
+        return workout, exercises
+    def get_latest_for_user(self, user_id):
+        """Return the user's most recent workout (by version_number), or None if none exist."""
+        return (
+            self.db.query(Workout)
+            .filter(Workout.user_id == user_id)
+            .order_by(Workout.version_number.desc())
+            .first()
+        )

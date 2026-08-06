@@ -9,26 +9,25 @@ class ChatService:
         self.rag_retriever = rag_retriever
         self.chat_repository = chat_repository
 
-    def handle_message(self, message: str, user_id=None, session_id=None) -> dict:
-        history = []
+    def handle_message(self, message: str, user_id=None, session_id=None, client_history=None) -> dict:
         if user_id is not None:
+            history = []
             session = self.chat_repository.get_active_session(user_id, session_id)
             if session is not None:
                 history = session.messages
+        else:
+            history = client_history or []  # visitors: trust only what the client just sent us
 
         needs_rag = is_knowledge_heavy(message)
         if needs_rag is None:
             needs_rag = classify_with_llm(message, self.llm_provider)
 
-        if needs_rag:
-            reply = self._answer_with_rag(message, history)
-        else:
-            reply = self._answer_direct(message, history)
+        reply = self._answer_with_rag(message, history) if needs_rag else self._answer_direct(message, history)
 
         if user_id is not None:
             session_id = self.chat_repository.append_message(user_id, session_id, message, reply)
         else:
-            session_id = None  # visitors never get a real session_id
+            session_id = None
 
         return {"reply": reply, "session_id": session_id, "used_rag": needs_rag}
 

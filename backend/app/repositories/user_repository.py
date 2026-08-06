@@ -10,6 +10,8 @@ class UserRepository:
         return self.db.query(User).filter(User.email == email).first()
 
     def get_by_id(self, user_id: str | uuid.UUID) -> User | None:
+        if isinstance(user_id, str):
+            user_id = uuid.UUID(user_id)
         return self.db.query(User).filter(User.id == user_id).first()
 
     def create(self, email: str, hashed_password: str) -> User:

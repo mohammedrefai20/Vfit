@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.orm import Session
 from app.models.profile import Profile
 
@@ -6,6 +7,8 @@ class ProfileRepository:
         self.db = db
 
     def get_by_user_id(self, user_id):
+        if isinstance(user_id, str):
+            user_id = uuid.UUID(user_id)
         return self.db.query(Profile).filter(Profile.user_id == user_id).first()
 
     def create(self, user_id, **fields):

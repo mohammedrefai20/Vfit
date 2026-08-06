@@ -19,6 +19,7 @@ from app.services.chat_service import ChatService
 from app.services.rag_retriever import RAGRetriever
 from app.providers.embedding_provider import EmbeddingProvider
 from app.repositories.knowledge_repository import KnowledgeRepository
+from app.repositories.progress_repository import ProgressRepository
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 bearer_scheme = HTTPBearer()
@@ -28,10 +29,16 @@ optional_bearer_scheme = HTTPBearer(auto_error=False)
 def get_settings():
     return settings
 
-engine = create_engine(settings.database_url)
-SessionLocal = sessionmaker(bind=engine)
+
+@lru_cache
+def get_engine():
+    return create_engine(settings.database_url)
+
+def get_session_local():
+    return sessionmaker(bind=get_engine())
 
 def get_db_session() -> Session:
+    SessionLocal = get_session_local()
     db = SessionLocal()
     try:
         yield db
@@ -121,3 +128,7 @@ def get_chat_service(
     chat_repository: ChatRepository = Depends(get_chat_repository),
 ) -> ChatService:
     return ChatService(llm_provider, rag_retriever, chat_repository)
+
+
+def get_progress_repository(db: Session = Depends(get_db_session)) -> ProgressRepository:
+    return ProgressRepository(db)

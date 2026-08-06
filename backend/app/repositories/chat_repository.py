@@ -49,3 +49,8 @@ class ChatRepository:
         if session.expires_at < datetime.now(timezone.utc):
             return None
         return session
+    def delete_session(self, user_id, session_id):
+        session = self.db.query(ChatSession).filter(ChatSession.id == session_id, ChatSession.user_id == user_id).first()
+        if session:
+            self.db.delete(session)
+            self.db.commit()

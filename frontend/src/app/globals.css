@@ -19,3 +19,12 @@ body {
   font-family: var(--font-body);
   min-height: 100vh;
 }
+
+@keyframes plate-stack {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-6px); opacity: 1; }
+}
+
+.animate-plate-stack {
+  animation: plate-stack 0.9s ease-in-out infinite;
+}
