@@ -18,3 +18,8 @@ class AuthService:
         if not user or not verify_password(password, user.hashed_password):
             raise ValueError("Invalid credentials")
         return create_access_token(str(user.id))
+    def change_password(self, user, current_password: str, new_password: str):
+        if not verify_password(current_password, user.hashed_password):
+            raise ValueError("Current password is incorrect")
+        user.hashed_password = hash_password(new_password)
+        self.user_repository.db.commit()

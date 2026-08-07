@@ -41,9 +41,10 @@ export default function WorkoutVersionsPage() {
 
   return (
     <div className="max-w-4xl">
-      <p className="font-display text-2xl font-bold mb-1">{v.name}</p>
-      <p className="text-text-muted text-xs tabular-nums mb-4">v{v.version}</p>
-      <p className="text-text-muted mb-8">Your latest {versions.length} plan{versions.length > 1 ? "s are" : " is"} kept for comparison.</p>
+      <h1 className="font-display text-4xl font-bold mb-2">Workout Versions</h1>
+      <p className="text-text-muted mb-8">
+        Your latest {versions.length} plan{versions.length > 1 ? "s are" : " is"} kept for comparison.
+      </p>
 
       <div className="grid md:grid-cols-3 gap-4">
         {versions.map((v, i) => (
@@ -57,7 +58,9 @@ export default function WorkoutVersionsPage() {
             {i === 0 && (
               <span className="text-xs font-medium text-primary tracking-wide mb-3 block">CURRENT</span>
             )}
-            <p className="font-display text-2xl font-bold tabular-nums mb-4">v{v.version}</p>
+
+            <p className="font-display text-2xl font-bold mb-1">{v.name}</p>
+            <p className="text-text-muted text-xs tabular-nums mb-4">v{v.version}</p>
 
             <div className="space-y-2 mb-5">
               <div className="flex items-center gap-2 text-text-muted text-sm">
@@ -71,37 +74,12 @@ export default function WorkoutVersionsPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => router.push(`/workouts/${v.workout_id}`)}
-              className="text-accent text-sm"
-            >
+            <button onClick={() => router.push(`/workouts/${v.workout_id}`)} className="text-accent text-sm">
               View plan →
             </button>
           </motion.div>
         ))}
       </div>
-      {showNameModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-            <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-sm">
-            <h3 className="font-display text-lg font-semibold mb-4">Name your plan</h3>
-            <input
-                autoFocus
-                value={planName}
-                onChange={(e) => setPlanName(e.target.value)}
-                placeholder="e.g. Summer Cut, Push Pull Legs"
-                className="w-full bg-bg border border-border rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <div className="flex gap-3">
-                <button onClick={() => setShowNameModal(false)} className="flex-1 border border-border rounded-lg py-2.5 text-sm">
-                Cancel
-                </button>
-                <button onClick={handleGenerateNamed} className="flex-1 bg-primary text-white rounded-lg py-2.5 text-sm font-medium">
-                Generate
-                </button>
-            </div>
-            </div>
-        </div>
-        )}
     </div>
   );
 }

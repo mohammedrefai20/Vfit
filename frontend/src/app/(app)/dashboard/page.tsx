@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import ProgressCheckIn from "@/components/ProgressCheckIn";
 
-type Workout = { workout_id: string; version: number };
+type Workout = { workout_id: string; version: number; name: string };
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -19,6 +19,17 @@ export default function DashboardPage() {
   const [showNameModal, setShowNameModal] = useState(false);
   const [planName, setPlanName] = useState("");
 
+  useEffect(() => {
+    api.get("/workouts").then((r) => { if (r) setWorkout(r); }).finally(() => setLoadingWorkout(false));
+  }, []);
+const [latestWeight, setLatestWeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    api.get("/progress").then((entries) => {
+      if (entries && entries.length > 0) setLatestWeight(entries[0].weight);
+    }).catch(() => {});
+  }, []);
+
   async function handleGenerateNamed() {
     setShowNameModal(false);
     setGenerating(true);
@@ -26,19 +37,8 @@ export default function DashboardPage() {
       const result = await api.post("/workouts/generate", { name: planName || "My Workout Plan" });
       setWorkout(result);
       setPlanName("");
-    } finally {
-      setGenerating(false);
-    }
-  }
-  useEffect(() => {
-    api.get("/workouts").then((r) => { if (r) setWorkout(r); }).finally(() => setLoadingWorkout(false));
-  }, []);
-
-  async function handleGenerate() {
-    setGenerating(true);
-    try {
-      const result = await api.post("/workouts/generate");
-      setWorkout(result);
+    } catch (err) {
+      console.error("Generate failed:", err);
     } finally {
       setGenerating(false);
     }
@@ -69,7 +69,11 @@ export default function DashboardPage() {
               </div>
             </>
           ) : (
-            <button onClick={() => setShowNameModal(true)} disabled={generating} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50">
+            <button
+              onClick={() => setShowNameModal(true)}
+              disabled={generating}
+              className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+            >
               {generating ? "Generating..." : "Generate plan"}
             </button>
           )}
@@ -77,7 +81,7 @@ export default function DashboardPage() {
 
         <Card icon={Sparkles} label="AI Summary" delay={0.05} accent>
           <p className="text-sm text-text-muted leading-relaxed">
-            {workout ? `You're on plan v${workout.version}. Ask the coach for tips anytime.` : "Generate a plan to see your personalized summary."}
+            {workout ? `You're on "${workout.name}" (v${workout.version}). Ask the coach for tips anytime.` : "Generate a plan to see your personalized summary."}
           </p>
         </Card>
 
@@ -88,7 +92,9 @@ export default function DashboardPage() {
 
       <div className="grid md:grid-cols-3 gap-4">
         <Card icon={Scale} label="Weight" delay={0.15}>
-          <p className="text-2xl font-display font-bold tabular-nums">— kg</p>
+          <p className="text-2xl font-display font-bold tabular-nums">
+            {latestWeight !== null ? `${latestWeight} kg` : "No data yet"}
+          </p>
         </Card>
         <Card icon={TrendingUp} label="Progress" delay={0.2}>
           <p className="text-sm text-text-muted">Log weekly to see your trend</p>
@@ -97,6 +103,29 @@ export default function DashboardPage() {
           <p className="text-sm text-text-muted">Check-in due every 7 days</p>
         </Card>
       </div>
+
+      {showNameModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="font-display text-lg font-semibold mb-4">Name your plan</h3>
+            <input
+              autoFocus
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              placeholder="e.g. Summer Cut, Push Pull Legs"
+              className="w-full bg-bg border border-border rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setShowNameModal(false)} className="flex-1 border border-border rounded-lg py-2.5 text-sm">
+                Cancel
+              </button>
+              <button onClick={handleGenerateNamed} className="flex-1 bg-primary text-white rounded-lg py-2.5 text-sm font-medium">
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

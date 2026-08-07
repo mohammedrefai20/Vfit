@@ -8,6 +8,8 @@ import {
   Settings, Info, LogOut, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import PageBackground from "@/components/PageBackground";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -81,6 +83,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 );
               })}
             </nav>
+            <div className="flex items-center justify-between px-3 py-2 mb-1">
+              <span className="text-text-muted text-sm">Theme</span>
+              <ThemeToggle />
+            </div>
 
             <button
               onClick={() => { logout(); router.push("/"); }}
@@ -101,7 +107,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <PanelLeftOpen size={18} />
         </button>
       )}
-
+      <PageBackground image="https://images.pexels.com/photos/5327571/pexels-photo-5327571.jpeg" />
       <motion.main
         animate={{ marginLeft: sidebarOpen ? 256 : 0 }}
         transition={{ duration: 0.25, ease: "easeInOut" }}
